@@ -2,6 +2,7 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Collections.ObjectModel;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Controls;
@@ -10,8 +11,42 @@ using System.Windows.Media.Imaging;
 using System.Threading;
 using System.Windows.Threading;
 using Drawing = System.Drawing; 
-namespace WpfSnipper
+namespace SimpleScreenshoter
 {
+    public class ScreenshotInfo
+    {
+        public string Path { get; set; } = "";
+        public string Created { get; set; } = "";
+    }
+
+    public partial class MainWindow : Window
+    {
+        public ObservableCollection<ScreenshotInfo> Screenshots { get; set; } = new();
+
+
+        private void LoadScreenshots()
+        {
+            string folder = System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
+                "SimpleScreenshoter");
+
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
+
+            var files = Directory.GetFiles(folder, "*.png")
+                                 .OrderByDescending(f => File.GetCreationTime(f));
+
+            foreach (var file in files)
+            {
+                Screenshots.Add(new ScreenshotInfo
+                {
+                    Path = file,
+                    Created = File.GetCreationTime(file).ToString("dd.MM.yyyy HH:mm")
+                });
+            }
+        }
+    }
+
     public partial class MainWindow : Window
     {
         private const int HOTKEY_ID = 9000;
@@ -39,7 +74,36 @@ namespace WpfSnipper
         public MainWindow()
         {
             InitializeComponent();
+            LoadScreenshots();
+            ScreenshotsList.ItemsSource = Screenshots;
         }
+
+        private void TitleBar_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ButtonState == MouseButtonState.Pressed)
+            {
+                this.DragMove();
+            }
+        }
+
+        private void CloseButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.Close();
+        }
+
+        private void MinimizeButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.WindowState = WindowState.Minimized;
+        }
+
+        private void MaximizeRestoreButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (this.WindowState == WindowState.Normal)
+                this.WindowState = WindowState.Maximized;
+            else
+                this.WindowState = WindowState.Normal;
+        }
+    
 
         protected override void OnSourceInitialized(EventArgs e)
         {
