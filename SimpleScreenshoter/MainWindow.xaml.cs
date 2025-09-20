@@ -45,6 +45,26 @@ namespace SimpleScreenshoter
                 });
             }
         }
+
+        private void Screenshot_Click(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is Border border && border.DataContext is ScreenshotInfo info)
+            {
+                try
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = info.Path,
+                        UseShellExecute = true
+                    });
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Не удалось открыть файл:\n{ex.Message}",
+                        "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
     }
 
     public partial class MainWindow : Window
