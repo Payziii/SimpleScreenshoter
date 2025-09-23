@@ -26,6 +26,7 @@ namespace SimpleScreenshoter
 
         private void LoadScreenshots()
         {
+            Screenshots.Clear();
             string folder = System.IO.Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.MyPictures),
                 "SimpleScreenshoter");
@@ -209,6 +210,7 @@ namespace SimpleScreenshoter
                 ShowWindow(hwnd, SW_SHOW);
                 try { DwmFlush(); } catch { }
                 this.Dispatcher.Invoke(DispatcherPriority.Render, new Action(() => { }));
+                LoadScreenshots();
             }
         }
 
